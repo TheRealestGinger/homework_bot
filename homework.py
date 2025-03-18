@@ -7,7 +7,9 @@ import requests
 from dotenv import load_dotenv
 from telebot import TeleBot
 
-from exceptions import *
+from exceptions import (
+    CantGetAnswerFromAPI, HomeworkNameIsNone, HomeworkVerdictIsUnknown
+)
 
 load_dotenv()
 
@@ -37,7 +39,7 @@ HOMEWORK_VERDICTS = {
 
 
 def check_tokens():
-    '''Проверка наличия токенов в переменных окружения.'''
+    """Проверка наличия токенов в переменных окружения."""
     if PRACTICUM_TOKEN is None:
         logger.critical('Отсутствует token практикума')
         raise AssertionError('Отсутствует token практикума')
@@ -50,7 +52,7 @@ def check_tokens():
 
 
 def send_message(bot, message):
-    '''Отправка сообщения в телеграм.'''
+    """Отправка сообщения в телеграм."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, text=message)
     except Exception as error:
@@ -60,7 +62,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(timestamp):
-    '''Получение ответа от API.'''
+    """Получение ответа от API."""
     try:
         response = requests.get(
             ENDPOINT, headers=HEADERS, params={'from_date': timestamp}
@@ -77,7 +79,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    '''Проверка ответа API на соответствие ожиданиям.'''
+    """Проверка ответа API на соответствие ожиданиям."""
     if not isinstance(response, dict):
         text = 'Структура данных API не соответствует ожиданиям'
         logger.error(text)
@@ -90,7 +92,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    '''Парсинг статуса домашней работы'''
+    """Парсинг статуса домашней работы."""
     if homework == []:
         logger.debug('Отсутствуют новые статусы домашней работы')
     elif homework.get('homework_name') is None:
@@ -110,7 +112,6 @@ def parse_status(homework):
 
 def main():
     """Основная логика работы бота."""
-
     check_tokens()
 
     bot = TeleBot(token=TELEGRAM_TOKEN)
