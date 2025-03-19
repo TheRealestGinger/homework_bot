@@ -96,7 +96,8 @@ def get_api_answer(timestamp):
         )
         response.raise_for_status()
     except requests.exceptions.RequestException as error:
-        raise error(REQUEST_ERROR.format(
+        raise error(
+            REQUEST_ERROR.format(
                 error=error,
                 ENDPOINT=ENDPOINT,
                 HEADERS=HEADERS,
