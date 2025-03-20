@@ -46,7 +46,7 @@ STATUS_CODE_ERROR = (
     f'Статус ответа: {{status_code}}. Ожидался 200. {REQUEST_PARAMS}'
 )
 RESPONSE_JSON_ERROR = (
-    f'Ошибка в ответе API: {{response_json}}. {REQUEST_PARAMS}'
+    f'Ошибка в ответе API: {{key}}: {{value}}. {REQUEST_PARAMS}'
 )
 RESPONSE_TYPE_ERROR = (
     'Тип данных ответа API не соответствует ожиданиям'
@@ -98,7 +98,7 @@ def get_api_answer(timestamp):
     try:
         response = requests.get(**request_params)
     except requests.exceptions.RequestException as error:
-        raise RuntimeError(
+        raise ConnectionError(
             REQUEST_ERROR.format(
                 error=error,
                 **request_params
@@ -116,7 +116,8 @@ def get_api_answer(timestamp):
         if key in response_json:
             raise RuntimeError(
                 RESPONSE_JSON_ERROR.format(
-                    response_json=f'{key}: {response_json[key]}',
+                    key=key,
+                    value=response_json[key],
                     **request_params
                 )
             )
@@ -173,8 +174,9 @@ def main():
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
                 send_message(bot, message)
+        if logger == MESSAGE_SEND_ERROR:
             last_error_message = message
-        else:
+        elif logger == MESSAGE_SEND_SUCCESS:
             timestamp = response.get('current_date', timestamp)
         time.sleep(RETRY_PERIOD)
 
