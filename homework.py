@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from telebot import TeleBot
 
 from exceptions import (
-    APIRequestError,
     StatusCodeError
 )
 
@@ -34,8 +33,8 @@ HOMEWORK_VERDICTS = {
 
 
 TOKEN_IS_NONE_ERROR = 'Отсутствует переменная {name}'
-MESSAGE_SEND_ERROR = 'Сообщение \'{message}\' не удалось отправить: {error}'
-MESSAGE_SEND_SUCCESS = 'Бот отправил сообщение: \'{message}\''
+MESSAGE_SEND_ERROR = 'Сообщение "{message}" не удалось отправить: {error}'
+MESSAGE_SEND_SUCCESS = 'Бот отправил сообщение: "{message}"'
 REQUEST_PARAMS = (
     'Параметры запроса: url - {ENDPOINT}, headers - {HEADERS}, '
     'params - {timestamp}'
@@ -61,7 +60,7 @@ HOMEWORK_NAME_ERROR = 'Отсутствует имя домашней работ
 HOMEWORK_STATUS_ERROR = 'Неожиданный статус домашней работы: {status}'
 PARSE_SUCCESS = (
     'Изменился статус проверки работы '
-    '\"{homework_name}\". '
+    '"{homework_name}". '
     '{status}'
 )
 EMPTY_HOMEWORKS = 'Новых домашних работ не найдено'
@@ -74,10 +73,9 @@ def check_tokens():
         'PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID'
     ) if globals()[name] is None]
     if missing_tokens:
-        for name in missing_tokens:
-            logger.critical(TOKEN_IS_NONE_ERROR.format(name=name))
-        raise NameError(
-            TOKEN_IS_NONE_ERROR.format(name=', '.join(missing_tokens))
+        logger.critical(TOKEN_IS_NONE_ERROR.format(name=missing_tokens))
+        raise ValueError(
+            TOKEN_IS_NONE_ERROR.format(name=missing_tokens)
         )
 
 
@@ -100,7 +98,7 @@ def get_api_answer(timestamp):
     try:
         response = requests.get(**request_params)
     except requests.exceptions.RequestException as error:
-        raise APIRequestError(
+        raise RuntimeError(
             REQUEST_ERROR.format(
                 error=error,
                 **request_params
@@ -114,18 +112,14 @@ def get_api_answer(timestamp):
             )
         )
     response_json = response.json()
-    if 'code' in response_json or 'error' in response_json:
-        error_key = 'code' if 'code' in response_json else 'error'
-        error_value = response_json[error_key]
-        raise RuntimeError(
-            RESPONSE_JSON_ERROR.format(
-                response_json=(
-                    f'{"code" if "code" in response_json else "error"}: '
-                    f'{error_value}'
-                ),
-                **request_params
+    for key in ('code', 'error'):
+        if key in response_json:
+            raise RuntimeError(
+                RESPONSE_JSON_ERROR.format(
+                    response_json=f'{key}: {response_json[key]}',
+                    **request_params
+                )
             )
-        )
     return response_json
 
 
@@ -150,7 +144,7 @@ def parse_status(homework):
     if 'homework_name' not in homework:
         raise KeyError(HOMEWORK_NAME_ERROR)
     if status not in HOMEWORK_VERDICTS:
-        raise KeyError(HOMEWORK_STATUS_ERROR.format(status=status))
+        raise ValueError(HOMEWORK_STATUS_ERROR.format(status=status))
     return PARSE_SUCCESS.format(
         homework_name=homework['homework_name'],
         status=HOMEWORK_VERDICTS[status]
@@ -172,7 +166,6 @@ def main():
             homeworks = response['homeworks']
             if homeworks:
                 send_message(bot, parse_status(homeworks[0]))
-                timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
 
@@ -180,7 +173,9 @@ def main():
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
                 send_message(bot, message)
-                last_error_message = message
+            last_error_message = message
+        else:
+            timestamp = response.get('current_date', timestamp)
         time.sleep(RETRY_PERIOD)
 
 
