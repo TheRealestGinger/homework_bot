@@ -174,9 +174,11 @@ def main():
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
                 send_message(bot, message)
-        if logger == MESSAGE_SEND_ERROR:
+        with open(f'{__file__}.log', 'r') as log_file:
+            last_log = log_file.readlines()[-1]
+        if last_log == MESSAGE_SEND_ERROR:
             last_error_message = message
-        elif logger == MESSAGE_SEND_SUCCESS:
+        elif last_log == MESSAGE_SEND_SUCCESS:
             timestamp = response.get('current_date', timestamp)
         time.sleep(RETRY_PERIOD)
 
