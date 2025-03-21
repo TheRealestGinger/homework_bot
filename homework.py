@@ -1,3 +1,4 @@
+import logging.handlers
 import os
 import logging
 import sys
@@ -167,9 +168,11 @@ def main():
             homeworks = response['homeworks']
             if homeworks:
                 message = parse_status(homeworks[0])
-                send_message(bot, message)
-                if (open(f'{__file__}.log', 'r').readlines()[-1]
-                        == MESSAGE_SEND_SUCCESS.format(message=message)):
+                try:
+                    send_message(bot, message)
+                except Exception:
+                    pass
+                else:
                     timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
@@ -177,9 +180,11 @@ def main():
         except Exception as error:
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
-                send_message(bot, message)
-                if (open(f'{__file__}.log', 'r').readlines()[-1]
-                        == MESSAGE_SEND_SUCCESS.format(message=message)):
+                try:
+                    send_message(bot, message)
+                except Exception:
+                    pass
+                else:
                     last_error_message = message
         time.sleep(RETRY_PERIOD)
 
