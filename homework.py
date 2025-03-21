@@ -166,7 +166,10 @@ def main():
             check_response(response)
             homeworks = response['homeworks']
             if homeworks:
-                send_message(bot, parse_status(homeworks[0]))
+                message = parse_status(homeworks[0])
+                send_message(bot, message)
+                if open(f'{__file__}.log', 'r').readlines()[-1] == message:
+                    timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
 
@@ -174,12 +177,8 @@ def main():
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
                 send_message(bot, message)
-        with open(f'{__file__}.log', 'r') as log_file:
-            last_log = log_file.readlines()[-1]
-        if last_log == MESSAGE_SEND_ERROR:
-            last_error_message = message
-        elif last_log == MESSAGE_SEND_SUCCESS:
-            timestamp = response.get('current_date', timestamp)
+                if open(f'{__file__}.log', 'r').readlines()[-1] == message:
+                    last_error_message = message
         time.sleep(RETRY_PERIOD)
 
 
