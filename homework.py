@@ -168,8 +168,8 @@ def main():
             if homeworks:
                 message = parse_status(homeworks[0])
                 send_message(bot, message)
-                if (open(f'{__file__}.log', 'r').readlines()[-1] ==
-                    MESSAGE_SEND_SUCCESS.format(message=message)):
+                if (open(f'{__file__}.log', 'r').readlines()[-1]
+                        == MESSAGE_SEND_SUCCESS.format(message=message)):
                     timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
@@ -178,8 +178,8 @@ def main():
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
                 send_message(bot, message)
-                if (open(f'{__file__}.log', 'r').readlines()[-1] ==
-                    MESSAGE_SEND_SUCCESS.format(message=message)):
+                if (open(f'{__file__}.log', 'r').readlines()[-1]
+                        == MESSAGE_SEND_SUCCESS.format(message=message)):
                     last_error_message = message
         time.sleep(RETRY_PERIOD)
 
