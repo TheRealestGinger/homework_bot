@@ -170,7 +170,7 @@ def main():
                 send_message(bot, message)
                 if (
                     open(f'{__file__}.log', 'r').readlines()[-1] ==
-                        MESSAGE_SEND_SUCCESS.format(message=message)
+                    MESSAGE_SEND_SUCCESS.format(message=message)
                 ):
                     timestamp = response.get('current_date', timestamp)
             else:
