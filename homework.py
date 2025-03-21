@@ -1,4 +1,3 @@
-import logging.handlers
 import os
 import logging
 import sys
@@ -89,6 +88,7 @@ def send_message(bot, message):
             MESSAGE_SEND_ERROR.format(message=message, error=error)
         )
     logger.debug(MESSAGE_SEND_SUCCESS.format(message=message))
+    return True
 
 
 def get_api_answer(timestamp):
@@ -168,11 +168,7 @@ def main():
             homeworks = response['homeworks']
             if homeworks:
                 message = parse_status(homeworks[0])
-                try:
-                    send_message(bot, message)
-                except Exception:
-                    pass
-                else:
+                if send_message(bot, message):
                     timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
@@ -180,11 +176,7 @@ def main():
         except Exception as error:
             message = MAIN_ERROR.format(error=error)
             if message != last_error_message:
-                try:
-                    send_message(bot, message)
-                except Exception:
-                    pass
-                else:
+                if send_message(bot, message):
                     last_error_message = message
         time.sleep(RETRY_PERIOD)
 
