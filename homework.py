@@ -167,8 +167,7 @@ def main():
             check_response(response)
             homeworks = response['homeworks']
             if homeworks:
-                message = parse_status(homeworks[0])
-                if send_message(bot, message):
+                if send_message(bot, parse_status(homeworks[0])):
                     timestamp = response.get('current_date', timestamp)
             else:
                 logger.debug(EMPTY_HOMEWORKS)
