@@ -175,9 +175,8 @@ def main():
 
         except Exception as error:
             message = MAIN_ERROR.format(error=error)
-            if message != last_error_message:
-                if send_message(bot, message):
-                    last_error_message = message
+            if message != last_error_message and send_message(bot, message):
+                last_error_message = message
         time.sleep(RETRY_PERIOD)
 
 
