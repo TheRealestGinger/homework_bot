@@ -87,8 +87,8 @@ def send_message(bot, message):
         logger.exception(
             MESSAGE_SEND_ERROR.format(message=message, error=error)
         )
+        return False
     logger.debug(MESSAGE_SEND_SUCCESS.format(message=message))
-    return True
 
 
 def get_api_answer(timestamp):
